@@ -16,6 +16,9 @@ const (
 
 func main() {
 
+	//https://docs.google.com/spreadsheets/d/1VEImDfFmCAQraxtNSvxp_2IMC1V0axNxZLBdlzfOtqI/edit#gid=0
+	yourSpreadSheetsID := "1VEImDfFmCAQraxtNSvxp_2IMC1V0axNxZLBdlzfOtqI"
+
 	credentials, err := ioutil.ReadFile(googleAppCredentials)
 	if err != nil {
 		log.Fatalf("Unable to read client secret file: %v\n", err)
@@ -32,7 +35,7 @@ func main() {
 	}
 
 	//var gs1 gSheetAPIv4.GoogleSheet
-	gs1, err := gSheetAPIv4.NewService(credentials, token, "1VEImDfFmCAQraxtNSvxp_2IMC1V0axNxZLBdlzfOtqI", false)
+	gs1, err := gSheetAPIv4.NewService(credentials, token, yourSpreadSheetsID, false)
 	if err != nil {
 		log.Fatalf("google sheet connect fail: \n%v", err)
 	}
