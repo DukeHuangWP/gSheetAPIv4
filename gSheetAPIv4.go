@@ -66,6 +66,66 @@ func transposeMatrix(slice [][]interface{}) [][]interface{} {
 	return result
 }
 
+func NewService(appCredentials []byte, accToken []byte, spreadSheetID string, setReadOnly bool) (GoogleSheet, error) {
+
+	var gSheet GoogleSheet
+	gSheet.AppCredentials = appCredentials
+	gSheet.AccToken = accToken
+	gSheet.SpreadSheetID = spreadSheetID //預先存入docs網址方便日後存取
+
+	config, err := gSheet.getGoogleAPIConfig(appCredentials, setReadOnly)
+	if err != nil {
+		// 	log.Printf("Unable to parse client secret file to config: %v\n", err)
+		return GoogleSheet{}, errors.New(googleErrorTitle + ": AppCredentials 內容格式錯誤 ! >> " + err.Error())
+	}
+
+	tok := &oauth2.Token{}
+	err = json.NewDecoder(bytes.NewReader(gSheet.AccToken)).Decode(tok)
+	if err != nil {
+		//log.Fatalf("Unable to cache oauth token: %v", err)
+		return GoogleSheet{}, errors.New(googleErrorTitle + ": AccountToken 內容格式錯誤 ! >> " + err.Error())
+	}
+	client := config.Client(context.Background(), tok)
+
+	gSheet.Srv, err = sheets.New(client)
+	if err != nil {
+		//log.Printf("Unable to retrieve Sheets client: %v\n", err)
+		return GoogleSheet{}, err
+	}
+
+	return gSheet, nil
+
+}
+
+//設置Google Sheet連結服務
+func (gs *GoogleSheet) SetService(spreadSheetID string, setReadOnly bool) (*sheets.Service, error) {
+
+	gs.SpreadSheetID = spreadSheetID //預先存入docs網址方便日後存取
+
+	config, err := gs.getGoogleAPIConfig(gs.AppCredentials, setReadOnly)
+	if err != nil {
+		// 	log.Printf("Unable to parse client secret file to config: %v\n", err)
+		return nil, errors.New(googleErrorTitle + ": AppCredentials 內容格式錯誤 ! >> " + err.Error())
+	}
+
+	tok := &oauth2.Token{}
+	err = json.NewDecoder(bytes.NewReader(gs.AccToken)).Decode(tok)
+	if err != nil {
+		//log.Fatalf("Unable to cache oauth token: %v", err)
+		return nil, errors.New(googleErrorTitle + ": AccountToken 內容格式錯誤 ! >> " + err.Error())
+	}
+	client := config.Client(context.Background(), tok)
+
+	gs.Srv, err = sheets.New(client)
+	if err != nil {
+		//log.Printf("Unable to retrieve Sheets client: %v\n", err)
+		return nil, err
+	}
+
+	return gs.Srv, nil
+
+}
+
 //由Sheet表名稱找出Sheet GID (使用名稱)
 func (gs *GoogleSheet) GetSheetGIDByName(sheetName string) (int64, error) {
 
@@ -96,6 +156,38 @@ func (gs *GoogleSheet) GetSheetGIDByIndex(sheetIndex int64) (int64, error) {
 		}
 	}
 	return 0, errors.New(googleErrorTitle + ": 「" + fmt.Sprint(sheetIndex) + "」 該Sheet Index不存在，請檢查Sheet內容!")
+}
+
+//由Sheet表index找出Sheet名稱 (使用index)
+func (gs *GoogleSheet) GetSheetNameByIndex(sheetIndex int64) (string, error) {
+
+	sheetService, err := gs.Srv.Spreadsheets.Get(gs.SpreadSheetID).Do()
+	if err != nil {
+		return "", errors.New(googleErrorTitle + ": 「" + gs.SpreadSheetID + "」 該SheetID不存在，請檢查網址或AccountToken權限!")
+	}
+
+	for _, sheet := range sheetService.Sheets {
+		if sheet.Properties.Index == sheetIndex {
+			return sheet.Properties.Title, nil
+		}
+	}
+	return "", errors.New(googleErrorTitle + ": 「" + fmt.Sprint(sheetIndex) + "」 該Sheet Index不存在，請檢查Sheet內容!")
+}
+
+//由Sheet表GID找出Sheet名稱 (使用GID)
+func (gs *GoogleSheet) GetSheetNameByGID(sheetGID int64) (string, error) {
+
+	sheetService, err := gs.Srv.Spreadsheets.Get(gs.SpreadSheetID).Do()
+	if err != nil {
+		return "", errors.New(googleErrorTitle + ": 「" + gs.SpreadSheetID + "」 該SheetID不存在，請檢查網址或AccountToken權限!")
+	}
+
+	for _, sheet := range sheetService.Sheets {
+		if sheet.Properties.SheetId == sheetGID {
+			return sheet.Properties.Title, nil
+		}
+	}
+	return "", errors.New(googleErrorTitle + ": 「" + fmt.Sprint(sheetGID) + "」 該SheetGID不存在，請檢查Sheet內容!")
 }
 
 //建立Google帳戶Token File(需要瀏覽器手動操作)
@@ -148,66 +240,6 @@ func (gs *GoogleSheet) CreatAccTokenFromWeb(appCredentials []byte, accTokenFileP
 	}
 
 	return []byte(token), nil
-}
-
-//設置Google Sheet連結服務
-func (gs *GoogleSheet) SetService(spreadSheetID string, setReadOnly bool) (*sheets.Service, error) {
-
-	gs.SpreadSheetID = spreadSheetID //預先存入docs網址方便日後存取
-
-	config, err := gs.getGoogleAPIConfig(gs.AppCredentials, setReadOnly)
-	if err != nil {
-		// 	log.Printf("Unable to parse client secret file to config: %v\n", err)
-		return nil, errors.New(googleErrorTitle + ": AppCredentials 內容格式錯誤 ! >> " + err.Error())
-	}
-
-	tok := &oauth2.Token{}
-	err = json.NewDecoder(bytes.NewReader(gs.AccToken)).Decode(tok)
-	if err != nil {
-		//log.Fatalf("Unable to cache oauth token: %v", err)
-		return nil, errors.New(googleErrorTitle + ": AccountToken 內容格式錯誤 ! >> " + err.Error())
-	}
-	client := config.Client(context.Background(), tok)
-
-	gs.Srv, err = sheets.New(client)
-	if err != nil {
-		//log.Printf("Unable to retrieve Sheets client: %v\n", err)
-		return nil, err
-	}
-
-	return gs.Srv, nil
-
-}
-
-//設定新的Google Sheet連結服務
-func (gs *GoogleSheet) NewService(appCredentials []byte, accToken []byte, spreadSheetID string, setReadOnly bool) (*sheets.Service, error) {
-
-	gs.AppCredentials = appCredentials
-	gs.AccToken = accToken
-	gs.SpreadSheetID = spreadSheetID //預先存入docs網址方便日後存取
-
-	config, err := gs.getGoogleAPIConfig(appCredentials, setReadOnly)
-	if err != nil {
-		// 	log.Printf("Unable to parse client secret file to config: %v\n", err)
-		return nil, errors.New(googleErrorTitle + ": AppCredentials 內容格式錯誤 ! >> " + err.Error())
-	}
-
-	tok := &oauth2.Token{}
-	err = json.NewDecoder(bytes.NewReader(gs.AccToken)).Decode(tok)
-	if err != nil {
-		//log.Fatalf("Unable to cache oauth token: %v", err)
-		return nil, errors.New(googleErrorTitle + ": AccountToken 內容格式錯誤 ! >> " + err.Error())
-	}
-	client := config.Client(context.Background(), tok)
-
-	gs.Srv, err = sheets.New(client)
-	if err != nil {
-		//log.Printf("Unable to retrieve Sheets client: %v\n", err)
-		return nil, err
-	}
-
-	return gs.Srv, nil
-
 }
 
 //獲取sheet Range中的數值
