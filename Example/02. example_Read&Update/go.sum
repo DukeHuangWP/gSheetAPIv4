@@ -39,6 +39,8 @@ github.com/DukeHuangWP/gSheetAPIv4 v0.0.0-20210118094542-f6d91e304dce h1:EXYxLWn
 github.com/DukeHuangWP/gSheetAPIv4 v0.0.0-20210118094542-f6d91e304dce/go.mod h1:X5/jFy1jMz/EVRZfIM782p9tr6cbisBA3PHhFfucHbo=
 github.com/DukeHuangWP/gSheetAPIv4 v0.0.0-20210119034139-34bd91c22349 h1:roYX5H9lHp4eH8KK9xSluNNL2GwL0i8NDaU46sLd3Do=
 github.com/DukeHuangWP/gSheetAPIv4 v0.0.0-20210119034139-34bd91c22349/go.mod h1:X5/jFy1jMz/EVRZfIM782p9tr6cbisBA3PHhFfucHbo=
+github.com/DukeHuangWP/gSheetAPIv4 v0.1.0 h1:Kd20rN27rej5yHu8WWfSb1MSp3TERjf0LQRI5u/wFew=
+github.com/DukeHuangWP/gSheetAPIv4 v0.1.0/go.mod h1:X5/jFy1jMz/EVRZfIM782p9tr6cbisBA3PHhFfucHbo=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=

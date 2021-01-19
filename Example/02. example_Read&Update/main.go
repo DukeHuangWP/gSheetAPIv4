@@ -11,7 +11,6 @@ import (
 const (
 	googleAppCredentials = "./credentials.json"
 	googleAccountToken   = "./token.json"
-	googleErrorTitle     = "Google Sheet API 預期錯誤"
 )
 
 func main() {
