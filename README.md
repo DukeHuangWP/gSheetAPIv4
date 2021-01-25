@@ -127,6 +127,7 @@ func main() {
 
 }
 ```
+![Demo](https://github.com/DukeHuangWP/gSheetAPIv4/blob/master/Example/HowTo.png?raw=true)
 
 
 
